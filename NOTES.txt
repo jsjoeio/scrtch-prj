@@ -1,0 +1,10 @@
+cosas que me gustarían en este proyecto
+- listas (viñetas y numeradas, y verificación)
+- quizás encabezados
+- https://playground.lexical.dev/
+
+https://playground.lexical.dev/
+
+MVP
+- listas
+- el poder de tachar
