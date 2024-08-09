@@ -1,21 +1,37 @@
-const CONTENT_KEY = 'scratchPadContent';
-const DATE_KEY = 'scratchPadDate';
+import { format, isToday, parse } from "date-fns";
+
+const CONTENT_KEY = "scratchPaper";
+const DATE_KEY = "scratchPaperDate";
+
+const getFormattedDate = (date = new Date()) => format(date, "MM-dd-yyyy");
 
 export const getStoredContent = (): string => {
-  const savedContent = localStorage.getItem(CONTENT_KEY);
-  const savedDate = localStorage.getItem(DATE_KEY);
-  const today = new Date().toDateString();
+  const storedDate = localStorage.getItem(DATE_KEY);
+  const storedContent = localStorage.getItem(CONTENT_KEY) || "";
 
-  if (savedDate === today && savedContent) {
-    return savedContent;
+  if (!storedDate) {
+    const currentDate = getFormattedDate();
+    localStorage.setItem(DATE_KEY, currentDate);
+    return storedContent;
   }
 
-  return '';
+  const parsedDate = getFormattedDate(
+    parse(storedDate, "MM-dd-yyyy", new Date())
+  );
+  console.log(parsedDate, "parsed");
+  console.log(isToday(parsedDate), "isToday", storedContent);
+
+  if (isToday(parsedDate)) {
+    return storedContent;
+  } else {
+    const currentDate = getFormattedDate();
+    localStorage.setItem(DATE_KEY, currentDate);
+    return "";
+  }
 };
 
 export const storeContent = (content: string): void => {
   localStorage.setItem(CONTENT_KEY, content);
-  localStorage.setItem(DATE_KEY, new Date().toDateString());
 };
 
 export const clearStoredContent = (): void => {

@@ -1,27 +1,24 @@
-import React, { useState, useEffect } from 'react';
-
-const STORAGE_KEY = 'scratchPaper';
+import React, { useState, useCallback } from "react";
+import { getStoredContent, storeContent } from "../utils/localStorage";
 
 export const ScratchPaper: React.FC = () => {
-  const [content, setContent] = useState<string>('');
+  const [content, setContent] = useState<string>(() => getStoredContent());
 
-  useEffect(() => {
-    const storedContent = localStorage.getItem(STORAGE_KEY);
-    if (storedContent) {
-      setContent(storedContent);
-    }
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, content);
-  }, [content]);
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      const newContent = e.target.value;
+      setContent(newContent);
+      storeContent(newContent);
+    },
+    []
+  );
 
   return (
     <div className="bg-white p-6 shadow-lg rounded-lg">
       <textarea
         className="w-full h-64 p-4 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
         value={content}
-        onChange={(e) => setContent(e.target.value)}
+        onChange={handleChange}
       />
     </div>
   );
