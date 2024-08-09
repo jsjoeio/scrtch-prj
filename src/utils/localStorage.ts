@@ -1,4 +1,4 @@
-import { format, isToday, parse } from "date-fns";
+import { format, isToday, parse, startOfDay } from "date-fns";
 
 const CONTENT_KEY = "scratchPaper";
 const DATE_KEY = "scratchPaperDate";
@@ -15,17 +15,14 @@ export const getStoredContent = (): string => {
     return storedContent;
   }
 
-  const parsedDate = getFormattedDate(
-    parse(storedDate, "MM-dd-yyyy", new Date())
-  );
-  console.log(parsedDate, "parsed");
-  console.log(isToday(parsedDate), "isToday", storedContent);
+  const parsedDate = parse(storedDate, "MM-dd-yyyy", new Date());
 
-  if (isToday(parsedDate)) {
+  if (isToday(startOfDay(parsedDate))) {
     return storedContent;
   } else {
     const currentDate = getFormattedDate();
     localStorage.setItem(DATE_KEY, currentDate);
+    storeContent("");
     return "";
   }
 };
