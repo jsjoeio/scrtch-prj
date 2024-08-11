@@ -7,6 +7,7 @@ import {
   useEditor,
 } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
+import { getStoredContent, storeContent } from "../utils/localStorage";
 
 export const TipTap = () => {
   const editor = useEditor({
@@ -17,14 +18,13 @@ export const TipTap = () => {
           "prose prose-sm sm:prose-base lg:prose-lg xl:prose-2xl m-5 focus:outline-none",
       },
     },
-    content: `
-      <p>
-        Try to select <em>this text</em> to see what we call the bubble menu.
-      </p>
-      <p>
-        Neat, isn’t it? Add an empty paragraph to see the floating menu.
-      </p>
-    `,
+    content: JSON.parse(getStoredContent()),
+    // triggered on every change
+    onUpdate: ({ editor }) => {
+      const json = editor.getJSON();
+      storeContent(JSON.stringify(json));
+      // send the content to an API here
+    },
   });
 
   return (
