@@ -1,5 +1,6 @@
 import React from "react";
 import { ScratchPaper } from "./components/ScratchPaper";
+import { TipTap } from "./components/TipTap";
 
 const App: React.FC = () => {
   return (
@@ -9,7 +10,7 @@ const App: React.FC = () => {
           <h1 className="text-3xl font-extrabold text-gray-900 mb-6">
             Digital Scratch Paper
           </h1>
-          <ScratchPaper />
+          <TipTap />
         </div>
       </div>
     </div>
