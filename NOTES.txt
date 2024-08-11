@@ -8,3 +8,6 @@ https://playground.lexical.dev/
 MVP
 - listas
 - el poder de tachar
+
+mirar esto 
+https://tiptap.dev/docs/examples/basics/default-text-editor
