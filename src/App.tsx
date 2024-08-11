@@ -1,5 +1,4 @@
 import React from "react";
-import { ScratchPaper } from "./components/ScratchPaper";
 import { TipTap } from "./components/TipTap";
 
 const App: React.FC = () => {
