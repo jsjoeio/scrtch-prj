@@ -1,10 +1,11 @@
-import React, { useCallback } from 'react';
-import { LexicalComposer } from '@lexical/react/LexicalComposer';
-import { PlainTextPlugin } from '@lexical/react/LexicalPlainTextPlugin';
-import { ContentEditable } from '@lexical/react/LexicalContentEditable';
-import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin';
-import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
-import LexicalErrorBoundary from '@lexical/react/LexicalErrorBoundary';
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+import React, { useCallback } from "react";
+import { LexicalComposer } from "@lexical/react/LexicalComposer";
+import { PlainTextPlugin } from "@lexical/react/LexicalPlainTextPlugin";
+import { ContentEditable } from "@lexical/react/LexicalContentEditable";
+import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
+import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
+import LexicalErrorBoundary from "@lexical/react/LexicalErrorBoundary";
 
 interface EditorProps {
   isFancyMode: boolean;
@@ -12,14 +13,15 @@ interface EditorProps {
   setContent: (content: string) => void;
 }
 
-const Editor: React.FC<EditorProps> = ({ isFancyMode, content, setContent }) => {
+const Editor: React.FC<EditorProps> = ({ setContent }) => {
   const initialConfig = {
-    namespace: 'DigitalScratchPaper',
+    namespace: "DigitalScratchPaper",
     onError: (error: Error) => console.error(error),
   };
 
   const onChange = useCallback(
-    (editorState: any) => {
+    // @ts-ignore something soon
+    (editorState) => {
       editorState.read(() => {
         const root = editorState.getRoot();
         const text = root.getTextContent();
