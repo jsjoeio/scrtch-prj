@@ -32,7 +32,7 @@ export const TipTap = () => {
       {editor && (
         <BubbleMenu
           className="bubble-menu"
-          tippyOptions={{ duration: 100 }}
+          tippyOptions={{ duration: 50 }}
           editor={editor}
         >
           <button
