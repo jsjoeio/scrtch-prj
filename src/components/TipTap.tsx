@@ -8,6 +8,7 @@ import {
 } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { getStoredContent, storeContent } from "../utils/localStorage";
+import { useEffect } from "react";
 
 export const TipTap = () => {
   const editor = useEditor({
@@ -26,6 +27,12 @@ export const TipTap = () => {
       // send the content to an API here
     },
   });
+
+  useEffect(() => {
+    if (editor) {
+      editor.commands.focus("end");
+    }
+  }, [editor]);
 
   return (
     <>
