@@ -1,14 +1,14 @@
-import "./styles.scss";
+import "./styles.scss"
 
 import {
   BubbleMenu,
   EditorContent,
   FloatingMenu,
   useEditor,
-} from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import { getStoredContent, storeContent } from "../utils/localStorage";
-import { useEffect } from "react";
+} from "@tiptap/react"
+import StarterKit from "@tiptap/starter-kit"
+import { getStoredContent, storeContent } from "../utils/localStorage"
+import { useEffect } from "react"
 
 export const TipTap = () => {
   const editor = useEditor({
@@ -22,17 +22,20 @@ export const TipTap = () => {
     content: JSON.parse(getStoredContent()),
     // triggered on every change
     onUpdate: ({ editor }) => {
-      const json = editor.getJSON();
-      storeContent(JSON.stringify(json));
+      const json = editor.getJSON()
+      storeContent(JSON.stringify(json))
       // send the content to an API here
     },
-  });
+  })
 
   useEffect(() => {
     if (editor) {
-      editor.commands.focus("end");
+      editor.view.dom.focus()
+      // maybe focus on ios devices
+      // https://github.com/ueberdosis/tiptap/issues/389#issuecomment-512991733
+      editor.commands.focus("end")
     }
-  }, [editor]);
+  }, [editor])
 
   return (
     <>
@@ -100,5 +103,5 @@ export const TipTap = () => {
 
       <EditorContent editor={editor} />
     </>
-  );
-};
+  )
+}
