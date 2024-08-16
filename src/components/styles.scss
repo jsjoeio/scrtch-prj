@@ -29,11 +29,11 @@
   ul,
   ol {
     padding: 0 1rem;
-    margin: 1.25rem 1rem 1.25rem 0.4rem;
+    margin: 0rem 1rem 1rem 0.1rem;
 
     li p {
-      margin-top: 0.25em;
-      margin-bottom: 0.25em;
+      margin-top: 0.15em;
+      margin-bottom: 0.15em;
     }
   }
 
@@ -45,13 +45,13 @@
   h5,
   h6 {
     line-height: 1.1;
-    margin-top: 2.5rem;
+    margin-top: 1.5rem;
     text-wrap: pretty;
   }
 
   h1,
   h2 {
-    margin-top: 3.5rem;
+    margin-top: 2.5rem;
     margin-bottom: 1.5rem;
   }
 
@@ -71,6 +71,11 @@
   h5,
   h6 {
     font-size: 1rem;
+  }
+
+  p {
+    margin-top: 0.1rem;
+    margin-bottom: 1rem;
   }
 
   /* Code and preformatted text styles */
