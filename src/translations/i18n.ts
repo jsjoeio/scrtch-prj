@@ -2,6 +2,7 @@ import i18n from "i18next"
 import { initReactI18next } from "react-i18next"
 
 // WIP: look at this: https://github.com/i18next/react-i18next/blob/master/example/react/src/i18n.js
+// y esto: https://react.i18next.com/latest/trans-component
 // the translations
 // (tip move them in a JSON ile and import them,
 // or even better, manage them separated from your code: https://react.i18next.com/guides/multiple-translation-files)
