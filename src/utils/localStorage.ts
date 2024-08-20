@@ -3,13 +3,13 @@ import { format, isToday, parse, startOfDay } from "date-fns";
 const CONTENT_KEY = "scratchPaper";
 const DATE_KEY = "scratchPaperDate";
 // We do this so we can parse it as json later for TipTap
-const FALLBACK_CONTENT = `{"type":"doc","content":[{"type":"paragraph"}]}`;
+const EMPTY_CONTENT = `{"type":"doc","content":[{"type":"paragraph"}]}`;
 
 const getFormattedDate = (date = new Date()) => format(date, "MM-dd-yyyy");
 
 export const getStoredContent = (): string => {
   const storedDate = localStorage.getItem(DATE_KEY);
-  const storedContent = localStorage.getItem(CONTENT_KEY) || FALLBACK_CONTENT;
+  const storedContent = localStorage.getItem(CONTENT_KEY) || EMPTY_CONTENT;
 
   if (!storedDate) {
     const currentDate = getFormattedDate();
@@ -24,8 +24,8 @@ export const getStoredContent = (): string => {
   } else {
     const currentDate = getFormattedDate();
     localStorage.setItem(DATE_KEY, currentDate);
-    storeContent(FALLBACK_CONTENT);
-    return FALLBACK_CONTENT;
+    storeContent(EMPTY_CONTENT);
+    return EMPTY_CONTENT;
   }
 };
 
@@ -33,7 +33,6 @@ export const storeContent = (content: string): void => {
   localStorage.setItem(CONTENT_KEY, content);
 };
 
-export const clearStoredContent = (): void => {
-  localStorage.removeItem(CONTENT_KEY);
-  localStorage.removeItem(DATE_KEY);
+export const resetStoredContent = (): void => {
+  localStorage.setItem(CONTENT_KEY, EMPTY_CONTENT);
 };
