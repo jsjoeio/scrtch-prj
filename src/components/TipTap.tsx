@@ -9,6 +9,7 @@ import {
 import StarterKit from "@tiptap/starter-kit";
 import { getStoredContent, storeContent } from "../utils/localStorage";
 import { useEffect } from "react";
+import { BottomNavigation } from "./BottomNavigation";
 
 export const TipTap = () => {
   const editor = useEditor({
@@ -106,6 +107,7 @@ export const TipTap = () => {
           border: "black",
         }}
       />
+      <BottomNavigation editor={editor} />
     </>
   );
 };
