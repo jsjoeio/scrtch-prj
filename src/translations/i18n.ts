@@ -9,12 +9,20 @@ import { initReactI18next } from "react-i18next";
 const resources = {
   en: {
     translation: {
-      "Welcome to React": "Welcome to React and react-i18next",
+      editor: {
+        bold: "Bold",
+        italic: "Italic",
+        strike: "Strike",
+      },
     },
   },
   es: {
     translation: {
-      "Welcome to React": "Bienvenido a React y react-i18next",
+      editor: {
+        bold: "Negrita",
+        italic: "Cursiva",
+        strike: "Tachado",
+      },
     },
   },
 };

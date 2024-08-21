@@ -1,11 +1,7 @@
 import "./styles.scss";
 
-import {
-  BubbleMenu,
-  EditorContent,
-  FloatingMenu,
-  useEditor,
-} from "@tiptap/react";
+import { EditorContent, FloatingMenu, useEditor } from "@tiptap/react";
+import { BubbleMenu } from "./BubbleMenu";
 import StarterKit from "@tiptap/starter-kit";
 import { getStoredContent, storeContent } from "../utils/localStorage";
 import { useEffect } from "react";
@@ -39,32 +35,7 @@ export const TipTap = () => {
 
   return (
     <>
-      {editor && (
-        <BubbleMenu
-          className="bubble-menu"
-          tippyOptions={{ duration: 50 }}
-          editor={editor}
-        >
-          <button
-            onClick={() => editor.chain().focus().toggleBold().run()}
-            className={editor.isActive("bold") ? "is-active" : ""}
-          >
-            Bold
-          </button>
-          <button
-            onClick={() => editor.chain().focus().toggleItalic().run()}
-            className={editor.isActive("italic") ? "is-active" : ""}
-          >
-            Italic
-          </button>
-          <button
-            onClick={() => editor.chain().focus().toggleStrike().run()}
-            className={editor.isActive("strike") ? "is-active" : ""}
-          >
-            Strike
-          </button>
-        </BubbleMenu>
-      )}
+      {editor && <BubbleMenu editor={editor} />}
 
       {editor && (
         <FloatingMenu
