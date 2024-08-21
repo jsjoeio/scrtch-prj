@@ -114,6 +114,16 @@
     border-top: 1px solid var(--gray-2);
     margin: 2rem 0;
   }
+
+  /* Link styles */
+  a {
+    color: var(--purple);
+    cursor: pointer;
+
+    &:hover {
+      color: var(--purple-contrast);
+    }
+  }
 }
 
 /* Bubble menu */

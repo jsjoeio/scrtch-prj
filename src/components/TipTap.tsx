@@ -6,10 +6,18 @@ import StarterKit from "@tiptap/starter-kit";
 import { getStoredContent, storeContent } from "../utils/localStorage";
 import { useEffect } from "react";
 import { BottomNavigation } from "./BottomNavigation";
+import Link from "@tiptap/extension-link";
 
 export const TipTap = () => {
   const editor = useEditor({
-    extensions: [StarterKit],
+    extensions: [
+      StarterKit,
+      Link.configure({
+        openOnClick: true,
+        autolink: true,
+        defaultProtocol: "https",
+      }),
+    ],
     editorProps: {
       attributes: {
         class:
