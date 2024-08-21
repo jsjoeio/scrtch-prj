@@ -37,7 +37,8 @@ export const TipTap = () => {
     if (editor) {
       // maybe focus on ios devices
       // https://github.com/ueberdosis/tiptap/issues/389#issuecomment-512991733
-      editor.commands.focus("end");
+      // randomly found that 5 is the first bullet point
+      editor.commands.focus(5);
     }
   }, [editor]);
 
