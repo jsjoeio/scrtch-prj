@@ -1,6 +1,6 @@
 import React from "react"
 import { useTranslation } from "react-i18next"
-import { addDays, format, Locale, subDays } from "date-fns"
+import { addDays, format, Locale } from "date-fns"
 import { es, enUS } from "date-fns/locale"
 
 interface FormattedDateProps {
