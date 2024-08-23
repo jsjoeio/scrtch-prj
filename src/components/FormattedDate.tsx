@@ -2,10 +2,11 @@ import React from "react"
 import { useTranslation } from "react-i18next"
 import { addDays, format, Locale } from "date-fns"
 import { es, enUS } from "date-fns/locale"
+import { ActiveDay } from "../App"
 
 interface FormattedDateProps {
-  activeDay: "today" | "tomorrow"
-  setActiveDay: React.Dispatch<React.SetStateAction<"today" | "tomorrow">>
+  activeDay: ActiveDay
+  setActiveDay: React.Dispatch<React.SetStateAction<ActiveDay>>
 }
 
 export const FormattedDate: React.FC<FormattedDateProps> = ({

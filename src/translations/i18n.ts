@@ -1,5 +1,5 @@
-import i18n from "i18next";
-import { initReactI18next } from "react-i18next";
+import i18n from "i18next"
+import { initReactI18next } from "react-i18next"
 
 // WIP: look at this: https://github.com/i18next/react-i18next/blob/master/example/react/src/i18n.js
 // y esto: https://react.i18next.com/latest/trans-component
@@ -14,6 +14,7 @@ const resources = {
         italic: "Italic",
         strike: "Strike",
         today: "today",
+        tomorrow: "tomorrow",
       },
     },
   },
@@ -24,10 +25,11 @@ const resources = {
         italic: "Cursiva",
         strike: "Tachado",
         today: "hoy",
+        tomorrow: "mañana",
       },
     },
   },
-};
+}
 
 i18n
   .use(initReactI18next) // passes i18n down to react-i18next
@@ -40,6 +42,6 @@ i18n
     interpolation: {
       escapeValue: false, // react already safes from xss
     },
-  });
+  })
 
-export default i18n;
+export default i18n
