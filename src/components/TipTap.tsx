@@ -8,6 +8,7 @@ import { useEffect } from "react"
 import { BottomNavigation } from "./BottomNavigation"
 import Link from "@tiptap/extension-link"
 import { ActiveDay } from "../App"
+import { CustomStrike } from "../extensions/CustomStrike"
 
 type Props = {
   activeDay: ActiveDay
@@ -16,7 +17,10 @@ type Props = {
 export const TipTap = ({ activeDay }: Props) => {
   const editor = useEditor({
     extensions: [
-      StarterKit,
+      StarterKit.configure({
+        strike: false, // Disable the default Strike extension
+      }),
+      CustomStrike, // Use our custom Strike extension with Cmd+. shortcut
       Link.configure({
         openOnClick: true,
         autolink: true,
