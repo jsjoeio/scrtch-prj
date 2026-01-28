@@ -2,10 +2,10 @@ import React from "react"
 import { TipTap } from "./components/TipTap"
 import { FormattedDate } from "./components/FormattedDate"
 
-export type ActiveDay = "today" | "tomorrow"
+export type ActiveDay = "dia1" | "dia2" | "apuntes"
 
 const App: React.FC = () => {
-  const [activeDay, setActiveDay] = React.useState<ActiveDay>("today")
+  const [activeDay, setActiveDay] = React.useState<ActiveDay>("dia1")
 
   return (
     <div className="flex items-center justify-center min-h-screen">

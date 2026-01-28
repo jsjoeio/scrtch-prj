@@ -24,3 +24,6 @@ dist-ssr
 
 # Temporary files
 tmp/
+
+# TypeScript build info
+*.tsbuildinfo
