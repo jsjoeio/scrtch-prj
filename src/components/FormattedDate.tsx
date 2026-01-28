@@ -17,9 +17,11 @@ export const FormattedDate: React.FC<FormattedDateProps> = ({
     <div className="text-sm font-light mt-6 mb-8 ml-5">
       <span
         onClick={() => setActiveDay("dia1")}
-        className={`cursor-pointer pr-4 text-gray-${
-          activeDay === "dia1" ? "500" : "300"
-        }`}
+        className={
+          activeDay === "dia1"
+            ? "cursor-pointer pr-4 text-gray-500"
+            : "cursor-pointer pr-4 text-gray-300"
+        }
       >
         {t("editor.dia1")}
       </span>
@@ -27,9 +29,11 @@ export const FormattedDate: React.FC<FormattedDateProps> = ({
 
       <span
         onClick={() => setActiveDay("dia2")}
-        className={`cursor-pointer px-4 text-gray-${
-          activeDay === "dia2" ? "500" : "300"
-        }`}
+        className={
+          activeDay === "dia2"
+            ? "cursor-pointer px-4 text-gray-500"
+            : "cursor-pointer px-4 text-gray-300"
+        }
       >
         {t("editor.dia2")}
       </span>
@@ -37,9 +41,11 @@ export const FormattedDate: React.FC<FormattedDateProps> = ({
 
       <span
         onClick={() => setActiveDay("apuntes")}
-        className={`cursor-pointer pl-4 text-gray-${
-          activeDay === "apuntes" ? "500" : "300"
-        }`}
+        className={
+          activeDay === "apuntes"
+            ? "cursor-pointer pl-4 text-gray-500"
+            : "cursor-pointer pl-4 text-gray-300"
+        }
       >
         {t("editor.apuntes")}
       </span>
