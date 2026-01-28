@@ -1,0 +1,1 @@
+{"root":["./src/App.tsx","./src/main.tsx","./src/vite-env.d.ts","./src/components/BottomNavigation.tsx","./src/components/BubbleMenu.tsx","./src/components/FormattedDate.tsx","./src/components/TipTap.tsx","./src/components/Toggle.tsx","./src/extensions/CustomStrike.ts","./src/translations/i18n.ts","./src/utils/localStorage.ts"],"errors":true,"version":"5.9.3"}
