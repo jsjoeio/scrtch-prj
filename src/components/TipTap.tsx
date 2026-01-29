@@ -4,7 +4,7 @@ import { EditorContent, FloatingMenu, useEditor } from "@tiptap/react"
 import { BubbleMenu } from "./BubbleMenu"
 import StarterKit from "@tiptap/starter-kit"
 import { getStoredContent, storeContent } from "../utils/localStorage"
-import { useEffect } from "react"
+import { useEffect, useRef } from "react"
 import { BottomNavigation } from "./BottomNavigation"
 import Link from "@tiptap/extension-link"
 import { ActiveDay } from "../App"
@@ -15,6 +15,8 @@ type Props = {
 }
 
 export const TipTap = ({ activeDay }: Props) => {
+  // Use a ref to track the current activeDay so the onUpdate callback always has the latest value
+  const activeDayRef = useRef<ActiveDay>(activeDay)
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -37,7 +39,8 @@ export const TipTap = ({ activeDay }: Props) => {
     // triggered on every change
     onUpdate: ({ editor }) => {
       const json = editor.getJSON()
-      storeContent(activeDay, JSON.stringify(json))
+      // Use the ref to get the current activeDay value
+      storeContent(activeDayRef.current, JSON.stringify(json))
       // send the content to an API here
     },
   })
@@ -52,6 +55,9 @@ export const TipTap = ({ activeDay }: Props) => {
   }, [editor])
 
   useEffect(() => {
+    // Update the ref whenever activeDay changes
+    activeDayRef.current = activeDay
+    
     if (editor) {
       editor.commands.setContent(JSON.parse(getStoredContent(activeDay)))
     }
