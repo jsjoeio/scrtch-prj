@@ -106,6 +106,7 @@ export const TipTap = ({ activeDay }: Props) => {
         editor={editor}
         style={{
           border: "black",
+          paddingBottom: "100px",
         }}
       />
       <BottomNavigation editor={editor} />
