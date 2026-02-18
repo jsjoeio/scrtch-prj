@@ -111,11 +111,61 @@ export const CustomStrike = Strike.extend({
           // Update content without adding to undo history
           this.editor.commands.setContent(json, false)
           
-          // Reset flag after update completes
+          // Move cursor to the first non-strikethrough item after reordering
           queueMicrotask(() => {
+            // Find the ordered list node and position cursor at first non-strikethrough item
+            const { state } = this.editor
+            const { doc } = state
+            
+            let targetPos: number | null = null
+            
+            doc.descendants((node, pos) => {
+              if (node.type.name === 'orderedList' && targetPos === null) {
+                // Count strikethrough items to find where normal items start
+                let strikethroughCount = 0
+                node.content.forEach((listItem) => {
+                  let hasStrike = false
+                  listItem.descendants((child) => {
+                    if (child.marks?.some(mark => mark.type.name === 'strike')) {
+                      hasStrike = true
+                    }
+                  })
+                  if (hasStrike) {
+                    strikethroughCount++
+                  }
+                })
+                
+                // If there are normal items, position cursor at the first one
+                if (strikethroughCount < node.content.childCount) {
+                  // Calculate position of the first non-strikethrough item
+                  let currentPos = pos + 1 // Start of list content
+                  for (let i = 0; i < strikethroughCount; i++) {
+                    currentPos += node.content.child(i).nodeSize
+                  }
+                  // Position inside the paragraph of the list item
+                  // currentPos points to start of listItem, +1 to enter listItem, +1 to enter paragraph
+                  targetPos = currentPos + 2
+                }
+                
+                return false // Stop traversing
+              }
+              return true
+            })
+            
+            // Set cursor position if we found a target
+            if (targetPos !== null) {
+              this.editor.commands.setTextSelection(targetPos)
+              this.editor.commands.focus()
+            }
+            
             this.storage.isReordering = false
           })
+          
+          return
         }
+        
+        // Reset flag if no changes were made
+        this.storage.isReordering = false
       }
     })
   },
