@@ -40,11 +40,16 @@ function reorderOrderedLists(doc: JSONContent): boolean {
         }
       })
       
-      // Only reorder if there are strikethrough items and they're not already at the top
+      // Only reorder if there are strikethrough items
       if (strikethroughItems.length > 0) {
         const newContent = [...strikethroughItems, ...normalItems]
-        // Check if order actually changed
-        const orderChanged = !items.every((item, index) => item === newContent[index])
+        
+        // Check if order actually changed by comparing items at each index
+        const orderChanged = items.some((item, index) => {
+          // Compare by checking if the item at this index is different
+          return newContent[index] !== item
+        })
+        
         if (orderChanged) {
           node.content = newContent
           hasChanges = true
@@ -91,6 +96,12 @@ export const CustomStrike = Strike.extend({
     queueMicrotask(() => {
       if (!this.editor.isDestroyed && !this.storage.isReordering) {
         const json = this.editor.getJSON()
+        
+        // Early exit if no ordered lists in the document
+        if (!json.content || !json.content.some((node: JSONContent) => node.type === 'orderedList')) {
+          return
+        }
+        
         const hasChanges = reorderOrderedLists(json)
         
         if (hasChanges) {
