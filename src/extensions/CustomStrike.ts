@@ -69,6 +69,12 @@ function reorderOrderedLists(doc: JSONContent): boolean {
  *    moving strikethrough items to the top of the list
  */
 export const CustomStrike = Strike.extend({
+  addStorage() {
+    return {
+      isReordering: false,
+    }
+  },
+  
   addKeyboardShortcuts() {
     return {
       'Mod-.': () => this.editor.commands.toggleStrike(),
@@ -76,15 +82,28 @@ export const CustomStrike = Strike.extend({
   },
   
   onUpdate() {
+    // Prevent re-entrant calls
+    if (this.storage.isReordering) {
+      return
+    }
+    
     // Use queueMicrotask to run after the current update is complete
     queueMicrotask(() => {
-      if (!this.editor.isDestroyed) {
+      if (!this.editor.isDestroyed && !this.storage.isReordering) {
         const json = this.editor.getJSON()
         const hasChanges = reorderOrderedLists(json)
         
         if (hasChanges) {
+          // Set flag to prevent re-entrant calls
+          this.storage.isReordering = true
+          
           // Update content without adding to undo history
           this.editor.commands.setContent(json, false)
+          
+          // Reset flag after update completes
+          queueMicrotask(() => {
+            this.storage.isReordering = false
+          })
         }
       }
     })
