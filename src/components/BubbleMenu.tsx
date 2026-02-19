@@ -3,9 +3,10 @@ import { useTranslation } from "react-i18next";
 
 type BubbleMenuProps = {
   editor: Editor;
+  onMoveToNextDay: () => void;
 };
 
-export const BubbleMenu = ({ editor }: BubbleMenuProps) => {
+export const BubbleMenu = ({ editor, onMoveToNextDay }: BubbleMenuProps) => {
   // TODO translate this
   const { t } = useTranslation();
   return (
@@ -31,6 +32,9 @@ export const BubbleMenu = ({ editor }: BubbleMenuProps) => {
         className={editor.isActive("strike") ? "is-active" : ""}
       >
         {t("editor.strike")}
+      </button>
+      <button onClick={onMoveToNextDay} title="Mod+Shift+M">
+        {t("editor.moveToNextDay")}
       </button>
     </TipTapBubbleMenu>
   );

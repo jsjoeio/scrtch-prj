@@ -1,10 +1,11 @@
 import "./styles.scss"
 
 import { EditorContent, FloatingMenu, useEditor } from "@tiptap/react"
+import type { JSONContent } from "@tiptap/core"
 import { BubbleMenu } from "./BubbleMenu"
 import StarterKit from "@tiptap/starter-kit"
 import { getStoredContent, storeContent } from "../utils/localStorage"
-import { useEffect, useRef } from "react"
+import { useCallback, useEffect, useRef } from "react"
 import { BottomNavigation } from "./BottomNavigation"
 import Link from "@tiptap/extension-link"
 import { ActiveDay } from "../App"
@@ -12,6 +13,12 @@ import { CustomStrike } from "../extensions/CustomStrike"
 
 type Props = {
   activeDay: ActiveDay
+}
+
+const getNextDay = (day: ActiveDay): ActiveDay => {
+  if (day === "dia1") return "dia2"
+  if (day === "dia2") return "apuntes"
+  return "dia1"
 }
 
 export const TipTap = ({ activeDay }: Props) => {
@@ -63,9 +70,77 @@ export const TipTap = ({ activeDay }: Props) => {
     }
   }, [activeDay, editor])
 
+  const handleMoveToNextDay = useCallback(() => {
+    if (!editor) return
+
+    const { state } = editor
+    const { from, to } = state.selection
+
+    if (from === to) return // No selection
+
+    const nextDay = getNextDay(activeDayRef.current)
+    const nextDayContent = JSON.parse(getStoredContent(nextDay))
+
+    // Get the selected slice
+    const slice = state.doc.slice(from, to)
+
+    // Collect nodes to move; wrap any inline/text content in a paragraph
+    const nodesToMove: JSONContent[] = []
+    let inlineNodes: JSONContent[] = []
+
+    slice.content.forEach((node) => {
+      if (node.isInline || node.type.name === "text") {
+        inlineNodes.push(node.toJSON())
+      } else {
+        if (inlineNodes.length > 0) {
+          nodesToMove.push({ type: "paragraph", content: inlineNodes })
+          inlineNodes = []
+        }
+        nodesToMove.push(node.toJSON())
+      }
+    })
+
+    if (inlineNodes.length > 0) {
+      nodesToMove.push({ type: "paragraph", content: inlineNodes })
+    }
+
+    if (nodesToMove.length > 0) {
+      // Append to next day's content
+      nextDayContent.content = [
+        ...(nextDayContent.content || []),
+        ...nodesToMove,
+      ]
+      storeContent(nextDay, JSON.stringify(nextDayContent))
+
+      // Delete selection from current day
+      editor.chain().focus().deleteSelection().run()
+    }
+  }, [editor])
+
+  // Register Mod+Shift+M keyboard shortcut to move selection to next day
+  useEffect(() => {
+    if (!editor) return
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (
+        (event.ctrlKey || event.metaKey) &&
+        event.shiftKey &&
+        event.key.toLowerCase() === "m"
+      ) {
+        if (editor.isFocused) {
+          event.preventDefault()
+          handleMoveToNextDay()
+        }
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown)
+    return () => document.removeEventListener("keydown", handleKeyDown)
+  }, [editor, handleMoveToNextDay])
+
   return (
     <>
-      {editor && <BubbleMenu editor={editor} />}
+      {editor && <BubbleMenu editor={editor} onMoveToNextDay={handleMoveToNextDay} />}
 
       {editor && (
         <FloatingMenu
