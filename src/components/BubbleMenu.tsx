@@ -1,12 +1,14 @@
 import { Editor, BubbleMenu as TipTapBubbleMenu } from "@tiptap/react";
 import { useTranslation } from "react-i18next";
+import { ActiveDay } from "../App";
 
 type BubbleMenuProps = {
   editor: Editor;
+  activeDay: ActiveDay;
+  onMoveToNextDay: () => void;
 };
 
-export const BubbleMenu = ({ editor }: BubbleMenuProps) => {
-  // TODO translate this
+export const BubbleMenu = ({ editor, activeDay, onMoveToNextDay }: BubbleMenuProps) => {
   const { t } = useTranslation();
   return (
     <TipTapBubbleMenu
@@ -32,6 +34,11 @@ export const BubbleMenu = ({ editor }: BubbleMenuProps) => {
       >
         {t("editor.strike")}
       </button>
+      {activeDay !== "apuntes" && (
+        <button onClick={onMoveToNextDay} title="Mod+Shift+M">
+          {t("editor.moveToNextDay")}
+        </button>
+      )}
     </TipTapBubbleMenu>
   );
 };

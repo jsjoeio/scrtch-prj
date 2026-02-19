@@ -1,10 +1,11 @@
 import "./styles.scss"
 
 import { EditorContent, FloatingMenu, useEditor } from "@tiptap/react"
+import type { JSONContent } from "@tiptap/core"
 import { BubbleMenu } from "./BubbleMenu"
 import StarterKit from "@tiptap/starter-kit"
 import { getStoredContent, storeContent } from "../utils/localStorage"
-import { useEffect, useRef } from "react"
+import { useCallback, useEffect, useRef } from "react"
 import { BottomNavigation } from "./BottomNavigation"
 import Link from "@tiptap/extension-link"
 import { ActiveDay } from "../App"
@@ -12,6 +13,12 @@ import { CustomStrike } from "../extensions/CustomStrike"
 
 type Props = {
   activeDay: ActiveDay
+}
+
+const getNextDay = (day: ActiveDay): ActiveDay | null => {
+  if (day === "dia1") return "dia2"
+  if (day === "dia2") return "dia1"
+  return null // apuntes has no next day
 }
 
 export const TipTap = ({ activeDay }: Props) => {
@@ -63,9 +70,109 @@ export const TipTap = ({ activeDay }: Props) => {
     }
   }, [activeDay, editor])
 
+  const handleMoveToNextDay = useCallback(() => {
+    if (!editor) return
+
+    const { state } = editor
+    const { from, to } = state.selection
+
+    if (from === to) return // No selection
+
+    const nextDay = getNextDay(activeDayRef.current)
+    if (!nextDay) return // apuntes has no next day
+
+    const nextDayContent = JSON.parse(getStoredContent(nextDay))
+
+    // Get the selected slice
+    const slice = state.doc.slice(from, to)
+
+    // Collect inline nodes from the selection to build a single listItem
+    const inlineNodes: JSONContent[] = []
+
+    slice.content.forEach((node) => {
+      if (node.isInline || node.type.name === "text") {
+        inlineNodes.push(node.toJSON())
+      } else if (node.type.name === "paragraph") {
+        node.content?.forEach((child) => inlineNodes.push(child.toJSON()))
+      } else if (node.type.name === "listItem") {
+        node.content?.forEach((child) => {
+          if (child.type.name === "paragraph") {
+            child.content?.forEach((textNode) => inlineNodes.push(textNode.toJSON()))
+          }
+        })
+      }
+    })
+
+    if (inlineNodes.length === 0) return
+
+    const newListItem: JSONContent = {
+      type: "listItem",
+      content: [{ type: "paragraph", content: inlineNodes }],
+    }
+
+    // Find the first orderedList in next day's content and insert into first empty listItem
+    let foundOrderedList = false
+    if (nextDayContent.content) {
+      for (let i = 0; i < nextDayContent.content.length; i++) {
+        if (nextDayContent.content[i].type === "orderedList") {
+          const items: JSONContent[] = nextDayContent.content[i].content || []
+          // Find index of first empty listItem (paragraph with no content or empty content)
+          const emptyIdx = items.findIndex((item) => {
+            const para = item.content?.[0]
+            return para?.type === "paragraph" && (!para.content || para.content.length === 0)
+          })
+          const updatedItems =
+            emptyIdx !== -1
+              ? items.map((item, idx) => (idx === emptyIdx ? newListItem : item))
+              : [...items, newListItem]
+          nextDayContent.content[i] = {
+            ...nextDayContent.content[i],
+            content: updatedItems,
+          }
+          foundOrderedList = true
+          break
+        }
+      }
+    }
+
+    // If no orderedList found, create one
+    if (!foundOrderedList) {
+      nextDayContent.content = [
+        ...(nextDayContent.content || []),
+        { type: "orderedList", attrs: { start: 1 }, content: [newListItem] },
+      ]
+    }
+
+    storeContent(nextDay, JSON.stringify(nextDayContent))
+
+    // Delete selection from current day
+    editor.chain().focus().deleteSelection().run()
+  }, [editor])
+
+  // Register Mod+Shift+M keyboard shortcut to move selection to next day
+  useEffect(() => {
+    if (!editor) return
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (
+        (event.ctrlKey || event.metaKey) &&
+        event.shiftKey &&
+        event.key.toLowerCase() === "m"
+      ) {
+        if (editor.isFocused) {
+          event.preventDefault()
+          handleMoveToNextDay()
+        }
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown)
+    return () => document.removeEventListener("keydown", handleKeyDown)
+  }, [editor, handleMoveToNextDay])
+
   return (
     <>
-      {editor && <BubbleMenu editor={editor} />}
+      {editor && <BubbleMenu editor={editor} activeDay={activeDay} onMoveToNextDay={handleMoveToNextDay} />}
 
       {editor && (
         <FloatingMenu
