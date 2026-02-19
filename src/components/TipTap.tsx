@@ -15,10 +15,10 @@ type Props = {
   activeDay: ActiveDay
 }
 
-const getNextDay = (day: ActiveDay): ActiveDay => {
+const getNextDay = (day: ActiveDay): ActiveDay | null => {
   if (day === "dia1") return "dia2"
-  if (day === "dia2") return "apuntes"
-  return "dia1"
+  if (day === "dia2") return "dia1"
+  return null // apuntes has no next day
 }
 
 export const TipTap = ({ activeDay }: Props) => {
@@ -79,42 +79,64 @@ export const TipTap = ({ activeDay }: Props) => {
     if (from === to) return // No selection
 
     const nextDay = getNextDay(activeDayRef.current)
+    if (!nextDay) return // apuntes has no next day
+
     const nextDayContent = JSON.parse(getStoredContent(nextDay))
 
     // Get the selected slice
     const slice = state.doc.slice(from, to)
 
-    // Collect nodes to move; wrap any inline/text content in a paragraph
-    const nodesToMove: JSONContent[] = []
-    let inlineNodes: JSONContent[] = []
+    // Collect inline nodes from the selection to build a single listItem
+    const inlineNodes: JSONContent[] = []
 
     slice.content.forEach((node) => {
       if (node.isInline || node.type.name === "text") {
         inlineNodes.push(node.toJSON())
-      } else {
-        if (inlineNodes.length > 0) {
-          nodesToMove.push({ type: "paragraph", content: inlineNodes })
-          inlineNodes = []
-        }
-        nodesToMove.push(node.toJSON())
+      } else if (node.type.name === "paragraph") {
+        node.content?.forEach((child) => inlineNodes.push(child.toJSON()))
+      } else if (node.type.name === "listItem") {
+        node.content?.forEach((child) => {
+          if (child.type.name === "paragraph") {
+            child.content?.forEach((textNode) => inlineNodes.push(textNode.toJSON()))
+          }
+        })
       }
     })
 
-    if (inlineNodes.length > 0) {
-      nodesToMove.push({ type: "paragraph", content: inlineNodes })
+    if (inlineNodes.length === 0) return
+
+    const newListItem: JSONContent = {
+      type: "listItem",
+      content: [{ type: "paragraph", content: inlineNodes }],
     }
 
-    if (nodesToMove.length > 0) {
-      // Append to next day's content
+    // Find the first orderedList in next day's content and append the item to it
+    let foundOrderedList = false
+    if (nextDayContent.content) {
+      for (let i = 0; i < nextDayContent.content.length; i++) {
+        if (nextDayContent.content[i].type === "orderedList") {
+          nextDayContent.content[i] = {
+            ...nextDayContent.content[i],
+            content: [...(nextDayContent.content[i].content || []), newListItem],
+          }
+          foundOrderedList = true
+          break
+        }
+      }
+    }
+
+    // If no orderedList found, create one
+    if (!foundOrderedList) {
       nextDayContent.content = [
         ...(nextDayContent.content || []),
-        ...nodesToMove,
+        { type: "orderedList", attrs: { start: 1 }, content: [newListItem] },
       ]
-      storeContent(nextDay, JSON.stringify(nextDayContent))
-
-      // Delete selection from current day
-      editor.chain().focus().deleteSelection().run()
     }
+
+    storeContent(nextDay, JSON.stringify(nextDayContent))
+
+    // Delete selection from current day
+    editor.chain().focus().deleteSelection().run()
   }, [editor])
 
   // Register Mod+Shift+M keyboard shortcut to move selection to next day
@@ -140,7 +162,7 @@ export const TipTap = ({ activeDay }: Props) => {
 
   return (
     <>
-      {editor && <BubbleMenu editor={editor} onMoveToNextDay={handleMoveToNextDay} />}
+      {editor && <BubbleMenu editor={editor} activeDay={activeDay} onMoveToNextDay={handleMoveToNextDay} />}
 
       {editor && (
         <FloatingMenu
