@@ -110,14 +110,24 @@ export const TipTap = ({ activeDay }: Props) => {
       content: [{ type: "paragraph", content: inlineNodes }],
     }
 
-    // Find the first orderedList in next day's content and append the item to it
+    // Find the first orderedList in next day's content and insert into first empty listItem
     let foundOrderedList = false
     if (nextDayContent.content) {
       for (let i = 0; i < nextDayContent.content.length; i++) {
         if (nextDayContent.content[i].type === "orderedList") {
+          const items: JSONContent[] = nextDayContent.content[i].content || []
+          // Find index of first empty listItem (paragraph with no content or empty content)
+          const emptyIdx = items.findIndex((item) => {
+            const para = item.content?.[0]
+            return para?.type === "paragraph" && (!para.content || para.content.length === 0)
+          })
+          const updatedItems =
+            emptyIdx !== -1
+              ? items.map((item, idx) => (idx === emptyIdx ? newListItem : item))
+              : [...items, newListItem]
           nextDayContent.content[i] = {
             ...nextDayContent.content[i],
-            content: [...(nextDayContent.content[i].content || []), newListItem],
+            content: updatedItems,
           }
           foundOrderedList = true
           break
