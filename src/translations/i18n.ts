@@ -29,7 +29,7 @@ const resources = {
         dia1: "día 1",
         dia2: "día 2",
         apuntes: "apuntes",
-        moveToNextDay: "Mover al siguiente día",
+        moveToNextDay: "mover",
       },
     },
   },

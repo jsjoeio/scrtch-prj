@@ -83,38 +83,61 @@ export const TipTap = ({ activeDay }: Props) => {
 
     const nextDayContent = JSON.parse(getStoredContent(nextDay))
 
-    // Get the selected slice
-    const slice = state.doc.slice(from, to)
-
-    // Collect inline nodes from the selection to build a single listItem
-    const inlineNodes: JSONContent[] = []
-
-    slice.content.forEach((node) => {
-      if (node.isInline || node.type.name === "text") {
-        inlineNodes.push(node.toJSON())
-      } else if (node.type.name === "paragraph") {
-        node.content?.forEach((child) => inlineNodes.push(child.toJSON()))
-      } else if (node.type.name === "listItem") {
-        node.content?.forEach((child) => {
-          if (child.type.name === "paragraph") {
-            child.content?.forEach((textNode) => inlineNodes.push(textNode.toJSON()))
-          }
-        })
+    // Find the parent listItem node containing the selection start
+    const $from = state.doc.resolve(from)
+    let listItemDepth = -1
+    for (let depth = $from.depth; depth >= 0; depth--) {
+      if ($from.node(depth).type.name === "listItem") {
+        listItemDepth = depth
+        break
       }
-    })
-
-    if (inlineNodes.length === 0) return
-
-    const newListItem: JSONContent = {
-      type: "listItem",
-      content: [{ type: "paragraph", content: inlineNodes }],
     }
 
-    // Find the first orderedList in next day's content and insert into first empty listItem
-    let foundOrderedList = false
+    let newListItem: JSONContent
+    let deleteFrom: number
+    let deleteTo: number
+    let sourceListType = "bulletList"
+
+    if (listItemDepth !== -1) {
+      // Move the entire listItem (including any nested sub-bullets)
+      const listItemNode = $from.node(listItemDepth)
+      const listItemPos = $from.before(listItemDepth)
+      newListItem = listItemNode.toJSON()
+      deleteFrom = listItemPos
+      deleteTo = listItemPos + listItemNode.nodeSize
+      // Detect the parent list type to preserve it when creating a new list
+      if (listItemDepth > 0) {
+        const parentNode = $from.node(listItemDepth - 1)
+        if (parentNode.type.name === "orderedList" || parentNode.type.name === "bulletList") {
+          sourceListType = parentNode.type.name
+        }
+      }
+    } else {
+      // Fallback: collect inline nodes from selection for non-list content
+      const slice = state.doc.slice(from, to)
+      const inlineNodes: JSONContent[] = []
+      slice.content.forEach((node) => {
+        if (node.isInline || node.type.name === "text") {
+          inlineNodes.push(node.toJSON())
+        } else if (node.type.name === "paragraph") {
+          node.content?.forEach((child) => inlineNodes.push(child.toJSON()))
+        }
+      })
+      if (inlineNodes.length === 0) return
+      newListItem = {
+        type: "listItem",
+        content: [{ type: "paragraph", content: inlineNodes }],
+      }
+      deleteFrom = from
+      deleteTo = to
+    }
+
+    // Find the first list in next day's content and append the item
+    let foundList = false
     if (nextDayContent.content) {
       for (let i = 0; i < nextDayContent.content.length; i++) {
-        if (nextDayContent.content[i].type === "orderedList") {
+        const nodeType = nextDayContent.content[i].type
+        if (nodeType === "orderedList" || nodeType === "bulletList") {
           const items: JSONContent[] = nextDayContent.content[i].content || []
           // Find index of first empty listItem (paragraph with no content or empty content)
           const emptyIdx = items.findIndex((item) => {
@@ -129,24 +152,28 @@ export const TipTap = ({ activeDay }: Props) => {
             ...nextDayContent.content[i],
             content: updatedItems,
           }
-          foundOrderedList = true
+          foundList = true
           break
         }
       }
     }
 
-    // If no orderedList found, create one
-    if (!foundOrderedList) {
+    // If no list found, create one matching the source list type
+    if (!foundList) {
+      const newListAttrs = sourceListType === "orderedList" ? { start: 1 } : {}
       nextDayContent.content = [
         ...(nextDayContent.content || []),
-        { type: "orderedList", attrs: { start: 1 }, content: [newListItem] },
+        { type: sourceListType, attrs: newListAttrs, content: [newListItem] },
       ]
     }
 
     storeContent(nextDay, JSON.stringify(nextDayContent))
 
-    // Delete selection from current day
-    editor.chain().focus().deleteSelection().run()
+    // Delete the moved content from the current day
+    editor.chain().focus().command(({ tr }) => {
+      tr.delete(deleteFrom, deleteTo)
+      return true
+    }).run()
   }, [editor])
 
   // Register Mod+Shift+M keyboard shortcut to move selection to next day
