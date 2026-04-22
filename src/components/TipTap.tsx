@@ -2,6 +2,7 @@ import "./styles.scss"
 
 import { EditorContent, FloatingMenu, useEditor } from "@tiptap/react"
 import type { JSONContent } from "@tiptap/core"
+import { TextSelection } from "@tiptap/pm/state"
 import { BubbleMenu } from "./BubbleMenu"
 import StarterKit from "@tiptap/starter-kit"
 import { getStoredContent, storeContent } from "../utils/localStorage"
@@ -196,6 +197,84 @@ export const TipTap = ({ activeDay }: Props) => {
     document.addEventListener("keydown", handleKeyDown)
     return () => document.removeEventListener("keydown", handleKeyDown)
   }, [editor, handleMoveToNextDay])
+
+  const handleMoveListItem = useCallback(
+    (direction: "up" | "down"): boolean => {
+      if (!editor) return false
+
+      const { state, view } = editor
+      const { $from } = state.selection
+
+      // Find the nearest listItem ancestor containing the cursor
+      let listItemDepth = -1
+      for (let depth = $from.depth; depth >= 0; depth--) {
+        if ($from.node(depth).type.name === "listItem") {
+          listItemDepth = depth
+          break
+        }
+      }
+      if (listItemDepth <= 0) return false
+
+      const listItem = $from.node(listItemDepth)
+      const parentList = $from.node(listItemDepth - 1)
+      const parentTypeName = parentList.type.name
+      if (parentTypeName !== "orderedList" && parentTypeName !== "bulletList") {
+        return false
+      }
+
+      const indexInParent = $from.index(listItemDepth - 1)
+      const itemCount = parentList.childCount
+      if (direction === "up" && indexInParent === 0) return false
+      if (direction === "down" && indexInParent === itemCount - 1) return false
+
+      const listItemPos = $from.before(listItemDepth)
+      const cursorOffsetInItem = $from.pos - listItemPos
+
+      const tr = state.tr
+      let newListItemPos: number
+      if (direction === "up") {
+        const prevItem = parentList.child(indexInParent - 1)
+        const prevItemPos = listItemPos - prevItem.nodeSize
+        tr.delete(listItemPos, listItemPos + listItem.nodeSize)
+        tr.insert(prevItemPos, listItem)
+        newListItemPos = prevItemPos
+      } else {
+        const nextItem = parentList.child(indexInParent + 1)
+        tr.delete(listItemPos, listItemPos + listItem.nodeSize)
+        tr.insert(listItemPos + nextItem.nodeSize, listItem)
+        newListItemPos = listItemPos + nextItem.nodeSize
+      }
+
+      // Restore selection near the cursor's original offset within the moved item
+      const targetPos = newListItemPos + cursorOffsetInItem
+      const mappedPos = Math.min(Math.max(targetPos, newListItemPos + 1), tr.doc.content.size)
+      tr.setSelection(TextSelection.near(tr.doc.resolve(mappedPos)))
+      tr.scrollIntoView()
+
+      view.dispatch(tr)
+      return true
+    },
+    [editor]
+  )
+
+  // Register Alt+ArrowUp / Alt+ArrowDown to reorder the current list item
+  useEffect(() => {
+    if (!editor) return
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (!event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return
+      if (event.key !== "ArrowUp" && event.key !== "ArrowDown") return
+      if (!editor.isFocused) return
+
+      const direction = event.key === "ArrowUp" ? "up" : "down"
+      if (handleMoveListItem(direction)) {
+        event.preventDefault()
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown)
+    return () => document.removeEventListener("keydown", handleKeyDown)
+  }, [editor, handleMoveListItem])
 
   return (
     <>
