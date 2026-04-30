@@ -319,12 +319,13 @@ export const TipTap = ({ activeDay }: Props) => {
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (!event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return
-      if (event.key.toLowerCase() !== "d") return
+      // Use event.code so the check works on macOS where Alt+D produces "∂" instead of "d"
+      if (event.code !== "KeyD") return
       if (!editor.isFocused) return
 
-      if (handleDuplicateListItem()) {
-        event.preventDefault()
-      }
+      // Prevent default before calling handler so stray characters (e.g. "∂" on macOS) are never inserted
+      event.preventDefault()
+      handleDuplicateListItem()
     }
 
     document.addEventListener("keydown", handleKeyDown)
