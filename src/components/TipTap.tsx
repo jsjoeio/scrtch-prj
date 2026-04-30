@@ -276,6 +276,61 @@ export const TipTap = ({ activeDay }: Props) => {
     return () => document.removeEventListener("keydown", handleKeyDown)
   }, [editor, handleMoveListItem])
 
+  const handleDuplicateListItem = useCallback((): boolean => {
+    if (!editor) return false
+
+    const { state, view } = editor
+    const { $from } = state.selection
+
+    // Find the nearest listItem ancestor containing the cursor
+    let listItemDepth = -1
+    for (let depth = $from.depth; depth >= 0; depth--) {
+      if ($from.node(depth).type.name === "listItem") {
+        listItemDepth = depth
+        break
+      }
+    }
+    if (listItemDepth <= 0) return false
+
+    const parentList = $from.node(listItemDepth - 1)
+    // Only duplicate in ordered lists
+    if (parentList.type.name !== "orderedList") return false
+
+    const listItem = $from.node(listItemDepth)
+    const listItemPos = $from.before(listItemDepth)
+
+    const tr = state.tr
+    // Insert a copy of the current item right after it
+    const insertPos = listItemPos + listItem.nodeSize
+    tr.insert(insertPos, listItem.copy(listItem.content))
+
+    // Move cursor to the start of the duplicated item's text
+    const targetPos = insertPos + 2 // +1 to enter listItem, +1 to enter paragraph
+    tr.setSelection(TextSelection.near(tr.doc.resolve(targetPos)))
+    tr.scrollIntoView()
+
+    view.dispatch(tr)
+    return true
+  }, [editor])
+
+  // Register Alt+D to duplicate the current numbered list item
+  useEffect(() => {
+    if (!editor) return
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (!event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return
+      if (event.key.toLowerCase() !== "d") return
+      if (!editor.isFocused) return
+
+      if (handleDuplicateListItem()) {
+        event.preventDefault()
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown)
+    return () => document.removeEventListener("keydown", handleKeyDown)
+  }, [editor, handleDuplicateListItem])
+
   return (
     <>
       {editor && <BubbleMenu editor={editor} activeDay={activeDay} onMoveToNextDay={handleMoveToNextDay} />}
